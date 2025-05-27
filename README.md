@@ -140,7 +140,7 @@ body {
 
 ## 👨‍💻 Author / ผู้พัฒนา
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/apichate-y)
+- **Your Name** - *Initial work* - [Apichate Yatra](https://github.com/apichate-y)
 
 ## 🙏 Acknowledgments / กิตติกรรมประกาศ
 
@@ -150,8 +150,8 @@ body {
 
 ## 📞 Contact / ติดต่อ
 
-- GitHub: [@yourusername](https://github.com/apichate-y)
-- Email: your.email@example.com
+- GitHub: [@apichate-y](https://github.com/apichate-y)
+- Email: apichate.yatra@gmail.com
 
 ---
 
