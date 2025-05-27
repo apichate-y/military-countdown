@@ -13,7 +13,8 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    padding: 1rem 0;
 }
 
 .stars {
@@ -182,13 +183,124 @@ h1 {
 }
 
 @media (max-width: 768px) {
-    h1 { font-size: 2rem; }
-    .time-number { font-size: 2rem; }
-    .countdown { grid-template-columns: repeat(2, 1fr); }
-    .container { padding: 1.5rem; }
+    h1 { 
+        font-size: 2.2rem; 
+        margin-bottom: 0.3rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .countdown { 
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    
+    .time-unit {
+        padding: 1.2rem 0.8rem;
+        border-radius: 12px;
+    }
+    
+    .time-number { 
+        font-size: 2.2rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .time-label {
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .container { 
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+    
+    .progress-bar {
+        margin: 1.5rem 0;
+        height: 16px;
+    }
+    
+    .progress-text {
+        font-size: 0.9rem;
+    }
+    
+    .motivational-quote {
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        line-height: 1.4;
+    }
 }
 
 @media (max-width: 480px) {
-    .countdown { grid-template-columns: 1fr; }
-    .time-unit { padding: 1rem; }
+    body {
+        justify-content: flex-start;
+        padding: 0.5rem 0;
+    }
+    
+    h1 { 
+        font-size: 1.8rem;
+    }
+    
+    .military-icon {
+        font-size: 3rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .countdown { 
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+        margin: 1.2rem 0;
+    }
+    
+    .time-unit { 
+        padding: 1rem 0.6rem;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80px;
+    }
+    
+    .time-number {
+        font-size: 2rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .time-label {
+        font-size: 0.85rem;
+        opacity: 1;
+        font-weight: 500;
+    }
+    
+    .container {
+        padding: 1.2rem 0.8rem;
+        margin: 0.5rem;
+        width: calc(100% - 1rem);
+        border-radius: 15px;
+        max-height: none;
+    }
+    
+    .progress-bar {
+        height: 14px;
+        margin: 1.2rem 0 0.8rem 0;
+    }
+    
+    .progress-text {
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+    }
+    
+    .motivational-quote {
+        font-size: 0.95rem;
+        margin-top: 1.2rem;
+        margin-bottom: 1rem;
+        padding: 0 0.5rem;
+        line-height: 1.5;
+    }
 }
