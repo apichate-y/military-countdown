@@ -30,9 +30,15 @@ const motivationalQuotes = [
 ];
 
 let currentQuoteIndex = 0;
+let dischargeDate = null;
+let startDate = null;
+let countdownInterval = null;
+let quoteInterval = null;
 
 function updateMotivationalQuote() {
     const quoteElement = document.getElementById('motivational-quote');
+    if (!quoteElement) return;
+
     quoteElement.style.opacity = '0';
 
     setTimeout(() => {
@@ -42,17 +48,29 @@ function updateMotivationalQuote() {
     }, 250);
 }
 
-// กำหนดวันที่ปลดทหาร (1 พฤศจิกายน 2568)
-const dischargeDate = new Date('2025-11-01T00:00:00');
-const startDate = new Date('2024-11-01T00:00:00'); // วันเริ่มต้นรับราชการ (1 พฤศจิกายน 2567)
+// คำนวณปี เดือน วัน ชั่วโมง นาที วินาที
+function calculateTimeUnits(timeLeft) {
+    const years = Math.floor(timeLeft / (1000 * 60 * 60 * 24 * 365));
+    const months = Math.floor((timeLeft % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+    const days = Math.floor((timeLeft % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    return { years, months, days, hours, minutes, seconds };
+}
 
 function updateCountdown() {
+    if (!dischargeDate || !startDate) return;
+
     const now = new Date();
     const timeLeft = dischargeDate - now;
 
     // ถ้าวันปลดมาถึงแล้ว
     if (timeLeft <= 0) {
         document.getElementById('celebration').style.display = 'block';
+        document.getElementById('years').textContent = '0';
+        document.getElementById('months').textContent = '0';
         document.getElementById('days').textContent = '000';
         document.getElementById('hours').textContent = '00';
         document.getElementById('minutes').textContent = '00';
@@ -63,47 +81,156 @@ function updateCountdown() {
     }
 
     // คำนวณเวลาที่เหลือ
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    const timeUnits = calculateTimeUnits(timeLeft);
 
     // อัพเดทการแสดงผล
-    document.getElementById('days').textContent = days.toString().padStart(3, '0');
-    document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-    document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-    document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    document.getElementById('years').textContent = timeUnits.years.toString();
+    document.getElementById('months').textContent = timeUnits.months.toString();
+    document.getElementById('days').textContent = timeUnits.days.toString().padStart(3, '0');
+    document.getElementById('hours').textContent = timeUnits.hours.toString().padStart(2, '0');
+    document.getElementById('minutes').textContent = timeUnits.minutes.toString().padStart(2, '0');
+    document.getElementById('seconds').textContent = timeUnits.seconds.toString().padStart(2, '0');
 
     // คำนวณ progress bar และจำนวนวันที่รับราชการ
     const totalTime = dischargeDate - startDate;
     const timePassed = now - startDate;
     const progressPercentage = Math.max(0, Math.min(100, (timePassed / totalTime) * 100));
     const daysServed = Math.floor(timePassed / (1000 * 60 * 60 * 24));
+    const totalDays = Math.floor(totalTime / (1000 * 60 * 60 * 24));
+    const daysLeft = totalDays - daysServed;
 
     document.getElementById('progress').style.width = progressPercentage + '%';
     document.getElementById('progress-text').textContent =
-        `รับราชการมาแล้ว ${daysServed} วัน • เหลืออีก ${days} วัน`;
+        `รับราชการมาแล้ว ${daysServed} วัน • เหลืออีก ${daysLeft} วัน`;
 }
 
-// เริ่มต้น
-createStars();
-updateCountdown();
+// บันทึกข้อมูลลง LocalStorage
+function saveToStorage(dischargeDateStr, startDateStr) {
+    localStorage.setItem('militaryDischargeDates', JSON.stringify({
+        dischargeDate: dischargeDateStr,
+        startDate: startDateStr
+    }));
+}
 
-// อัพเดททุกวินาที
-setInterval(updateCountdown, 1000);
+// โหลดข้อมูลจาก LocalStorage
+function loadFromStorage() {
+    const saved = localStorage.getItem('militaryDischargeDates');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            return {
+                dischargeDate: data.dischargeDate,
+                startDate: data.startDate
+            };
+        } catch (e) {
+            console.error('Error loading saved dates:', e);
+            return null;
+        }
+    }
+    return null;
+}
 
-// เปลี่ยนคำคมทุก 5 วินาที
-setInterval(updateMotivationalQuote, 5000);
+// แสดงหน้าเคาดาวน์
+function showCountdownPage() {
+    document.getElementById('setup-container').style.display = 'none';
+    document.getElementById('countdown-container').style.display = 'block';
+
+    // เริ่ม interval สำหรับอัพเดท
+    countdownInterval = setInterval(updateCountdown, 1000);
+    quoteInterval = setInterval(updateMotivationalQuote, 5000);
+
+    // อัพเดทครั้งแรก
+    updateCountdown();
+}
+
+// แสดงหน้าตั้งค่า
+function showSetupPage() {
+    document.getElementById('countdown-container').style.display = 'none';
+    document.getElementById('setup-container').style.display = 'block';
+
+    // หยุด interval
+    if (countdownInterval) clearInterval(countdownInterval);
+    if (quoteInterval) clearInterval(quoteInterval);
+}
+
+// จัดการฟอร์มกรอกข้อมูล
+function handleFormSubmit(event) {
+    event.preventDefault();
+
+    const dischargeDateInput = document.getElementById('discharge-date').value;
+    const startDateInput = document.getElementById('start-date').value;
+
+    if (!dischargeDateInput || !startDateInput) {
+        alert('กรุณากรอกวันที่ให้ครบถ้วน');
+        return;
+    }
+
+    // ตรวจสอบวันที่
+    const dischargeDateTime = new Date(dischargeDateInput);
+    const startDateTime = new Date(startDateInput);
+
+    if (startDateTime >= dischargeDateTime) {
+        alert('วันที่เริ่มรับราชการต้องมาก่อนวันที่ปลด');
+        return;
+    }
+
+    // บันทึกข้อมูล
+    dischargeDate = dischargeDateTime;
+    startDate = startDateTime;
+
+    saveToStorage(dischargeDateInput, startDateInput);
+    showCountdownPage();
+}
+
+// ตั้งค่าวันที่ใหม่
+function resetDates() {
+    localStorage.removeItem('militaryDischargeDates');
+    dischargeDate = null;
+    startDate = null;
+    showSetupPage();
+}
 
 // เพิ่มเอฟเฟกต์พิเศษ
-document.addEventListener('DOMContentLoaded', function () {
-    const container = document.querySelector('.container');
-    container.style.opacity = '0';
-    container.style.transform = 'translateY(50px)';
+function addEntryAnimation() {
+    const containers = document.querySelectorAll('.setup-container, .countdown-container');
+    containers.forEach(container => {
+        if (container.style.display !== 'none') {
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(50px)';
 
-    setTimeout(() => {
-        container.style.transition = 'all 1s ease';
-        container.style.opacity = '1';
-        container.style.transform = 'translateY(0)';
-    }, 100);
-});
+            setTimeout(() => {
+                container.style.transition = 'all 1s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    });
+}
+
+// เริ่มต้นแอป
+function initApp() {
+    createStars();
+
+    // ตรวจสอบข้อมูลที่บันทึกไว้
+    const savedData = loadFromStorage();
+
+    if (savedData) {
+        // มีข้อมูลบันทึกไว้แล้ว
+        dischargeDate = new Date(savedData.dischargeDate);
+        startDate = new Date(savedData.startDate);
+        showCountdownPage();
+    } else {
+        // ยังไม่มีข้อมูล แสดงหน้าตั้งค่า
+        showSetupPage();
+    }
+
+    // เพิ่ม event listeners
+    document.getElementById('setup-form').addEventListener('submit', handleFormSubmit);
+    document.getElementById('reset-btn').addEventListener('click', resetDates);
+
+    // เพิ่มเอฟเฟกต์
+    setTimeout(addEntryAnimation, 100);
+}
+
+// เริ่มต้นเมื่อ DOM โหลดเสร็จ
+document.addEventListener('DOMContentLoaded', initApp);
